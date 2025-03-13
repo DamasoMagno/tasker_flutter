@@ -126,7 +126,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 ),
               ),
             ),
-            const SizedBox(height: 24), // Adicionando espaçamento
+            const SizedBox(height: 16), // Adicionando espaçamento
             TextField(
               controller: description,
               decoration: const InputDecoration(
@@ -143,6 +143,9 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                 onPressed: handleCreateNewTask,
                 style: ButtonStyle(
+                    minimumSize: WidgetStateProperty.all(
+                      Size(double.infinity, 48)
+                    ),
                     backgroundColor: WidgetStateProperty.all(Colors.white),
                     shape: WidgetStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)))),
@@ -152,7 +155,18 @@ class _MyHomePageState extends State<MyHomePage> {
                     )),
               ),
             ),
-            const SizedBox(height: 15), // Mais espaçamento
+            const SizedBox(height: 24),
+            Align(
+                alignment: Alignment.topRight,
+                child: Text(
+                  "${tasks.length} tasks cadastradas",
+                  textAlign: TextAlign.right,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w100
+                  ),
+                )),
+            const SizedBox(height: 8),
             Expanded(child: TasksList(tasks: tasks, onDelete: handleDeleteTask))
           ],
         ),
