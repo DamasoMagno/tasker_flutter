@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 import 'package:task_flutter/components/new_task.dart';
 import 'package:task_flutter/components/tasks_list.dart';
 import 'package:task_flutter/model/task.dart';
@@ -38,6 +40,27 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Task> tasks = [];
   List<Task> filteredTasks = [];
 
+  @override
+  void initState() {
+    super.initState();
+    loadTasks();
+  }
+
+  Future<void> loadTasks() async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? tasksJson = prefs.getStringList('tasks');
+
+    if (tasksJson != null) {
+      setState(() {
+        tasks = tasksJson.map((taskStr) {
+          Map<String, dynamic> taskMap = jsonDecode(taskStr);
+          return Task.fromMap(taskMap);
+        }).toList();
+        filteredTasks = tasks;
+      });
+    }
+  }
+
   Future<void> handleCreateNewTask() async {
     if (title.text.isEmpty || description.text.isEmpty) {
       showDialog(
@@ -60,12 +83,17 @@ class _MyHomePageState extends State<MyHomePage> {
       return;
     }
 
+    SharedPreferences prefs = await SharedPreferences.getInstance();
     Task newTask = Task(name: title.text, description: description.text);
+    tasks.add(newTask);
+
+    List<String> tasksJson =
+        tasks.map((task) => jsonEncode(task.toMap())).toList();
+
+    await prefs.setStringList('tasks', tasksJson);
 
     setState(() {
-      tasks.add(newTask);
-      filteredTasks = tasks; // Atualiza a lista filtrada
-
+      filteredTasks = tasks;
 
       title.clear();
       description.clear();
@@ -98,9 +126,16 @@ class _MyHomePageState extends State<MyHomePage> {
         });
   }
 
-  void deleteTask(int taskPosition) {
+  void deleteTask(int taskPosition) async {
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    tasks.removeAt(taskPosition);
+    List<String> tasksJson =
+        tasks.map((task) => jsonEncode(task.toMap())).toList();
+
+    await prefs.setStringList("tasks", tasksJson);  
+    
     setState(() {
-      tasks.removeAt(taskPosition);
       filteredTasks = tasks;
     });
   }
