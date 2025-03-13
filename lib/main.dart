@@ -41,6 +41,7 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Task> tasks = [
     Task(name: "Primeira task", description: "Descrição da primeira task")
   ];
+  List<Task> filteredTasks = [];
 
   void handleCreateNewTask() {
     if (name.text.isEmpty || description.text.isEmpty) {
@@ -67,6 +68,7 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       Task newTask = Task(name: name.text, description: description.text);
       tasks.add(newTask);
+      filteredTasks = tasks;
 
       name.clear();
       description.clear();
@@ -102,6 +104,7 @@ class _MyHomePageState extends State<MyHomePage> {
   void deleteTask(int taskPosition) {
     setState(() {
       tasks.removeAt(taskPosition);
+      filteredTasks = tasks;
     });
   }
 
@@ -143,9 +146,8 @@ class _MyHomePageState extends State<MyHomePage> {
               child: ElevatedButton(
                 onPressed: handleCreateNewTask,
                 style: ButtonStyle(
-                    minimumSize: WidgetStateProperty.all(
-                      Size(double.infinity, 48)
-                    ),
+                    minimumSize:
+                        WidgetStateProperty.all(Size(double.infinity, 48)),
                     backgroundColor: WidgetStateProperty.all(Colors.white),
                     shape: WidgetStateProperty.all(RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16)))),
@@ -159,15 +161,31 @@ class _MyHomePageState extends State<MyHomePage> {
             Align(
                 alignment: Alignment.topRight,
                 child: Text(
-                  "${tasks.length} tasks cadastradas",
+                  "${filteredTasks.length} tasks cadastradas",
                   textAlign: TextAlign.right,
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w100
-                  ),
+                  style: TextStyle(fontSize: 12, fontWeight: FontWeight.w100),
                 )),
+            TextField(
+              controller: null,
+              onChanged: (value) {
+                setState(() {
+                  if(value.isNotEmpty){
+                    filteredTasks = tasks.where((task) => task.name.startsWith(value)).toList();
+                  } else {
+                    filteredTasks = tasks;
+                  }
+                });
+              },
+              decoration: const InputDecoration(
+                hintText: 'Buscar por nome...',
+                labelStyle: TextStyle(fontSize: 12),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.all(Radius.circular(16)),
+                ),
+              ),
+            ),
             const SizedBox(height: 8),
-            Expanded(child: TasksList(tasks: tasks, onDelete: handleDeleteTask))
+            Expanded(child: TasksList(tasks: filteredTasks, onDelete: handleDeleteTask))
           ],
         ),
       ),
